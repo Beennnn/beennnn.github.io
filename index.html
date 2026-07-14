@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BenLab — Stream Deck tools for musicians & makers</title>
+<meta name="description" content="Home base for Benoît's Stream Deck plugins and icon packs — LumiDeck, Stage Keys, WLED icons and more. Docs, source and support for every product, plus the OpenLamp stage-light project.">
+<meta property="og:title" content="BenLab — Stream Deck tools for musicians & makers">
+<meta property="og:description" content="Docs, source and support for every Stream Deck plugin and icon pack I build.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%9B%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #f3f5f7;
+    --surface: #ffffff;
+    --surface-hi: #ffffff;
+    --key: #ffffff;
+    --border: #e3e8ed;
+    --border-hi: #d2dae1;
+    --text: #131922;
+    --dim: #55616d;
+    --muted: #8a95a1;
+    --accent: #0f9e86;
+    --accent-ink: #0a5548;
+    --accent-wash: #e2f5f0;
+    --amber: #b57518;
+    --amber-wash: #f8efdf;
+    --radius: 14px;
+    --maxw: 1080px;
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0c0f13;
+      --surface: #12171d;
+      --surface-hi: #171d25;
+      --key: #151b22;
+      --border: #232c37;
+      --border-hi: #33404e;
+      --text: #e9eef3;
+      --dim: #9aa7b4;
+      --muted: #66727f;
+      --accent: #37e0c1;
+      --accent-ink: #9ff2e2;
+      --accent-wash: #10241f;
+      --amber: #f0ac47;
+      --amber-wash: #241a0e;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f3f5f7; --surface: #ffffff; --surface-hi: #ffffff; --key: #ffffff;
+    --border: #e3e8ed; --border-hi: #d2dae1; --text: #131922; --dim: #55616d;
+    --muted: #8a95a1; --accent: #0f9e86; --accent-ink: #0a5548; --accent-wash: #e2f5f0;
+    --amber: #b57518; --amber-wash: #f8efdf;
+  }
+  :root[data-theme="dark"] {
+    --bg: #0c0f13; --surface: #12171d; --surface-hi: #171d25; --key: #151b22;
+    --border: #232c37; --border-hi: #33404e; --text: #e9eef3; --dim: #9aa7b4;
+    --muted: #66727f; --accent: #37e0c1; --accent-ink: #9ff2e2; --accent-wash: #10241f;
+    --amber: #f0ac47; --amber-wash: #241a0e;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--font-sans); line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+  a { color: inherit; }
+  .eyebrow {
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--accent); font-weight: 500;
+  }
+
+  /* ---- top bar ---- */
+  header.top {
+    position: sticky; top: 0; z-index: 20;
+    backdrop-filter: saturate(1.4) blur(8px);
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    border-bottom: 1px solid var(--border);
+  }
+  .top .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-weight: 500; letter-spacing: 0.04em; }
+  .led { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent); animation: pulse 3.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); } 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 0%, transparent); } }
+  .top nav { display: flex; gap: 22px; font-size: 14px; }
+  .top nav a { color: var(--dim); text-decoration: none; }
+  .top nav a:hover { color: var(--text); }
+  @media (max-width: 620px) { .top nav { display: none; } }
+
+  /* ---- hero ---- */
+  .hero { padding: 74px 0 30px; }
+  .hero .readout {
+    font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.14em;
+    color: var(--dim); text-transform: uppercase; margin-bottom: 22px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .hero h1 {
+    font-size: clamp(38px, 7vw, 68px); line-height: 1.02; margin: 0 0 20px;
+    font-weight: 680; letter-spacing: -0.02em; text-wrap: balance; max-width: 15ch;
+  }
+  .hero h1 .glow { color: var(--accent); }
+  .hero .lede { font-size: clamp(17px, 2.4vw, 20px); color: var(--dim); max-width: 60ch; margin: 0 0 30px; }
+  .hero .cta { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+    font-size: 15px; font-weight: 500; padding: 11px 18px; border-radius: 10px;
+    border: 1px solid var(--border-hi); color: var(--text); background: var(--surface);
+    transition: transform .12s ease, border-color .12s ease, background .12s ease;
+  }
+  .btn:hover { transform: translateY(-1px); border-color: var(--accent); }
+  .btn.primary { background: var(--accent); color: #04211c; border-color: var(--accent); }
+  :root[data-theme="light"] .btn.primary, :root:not([data-theme="dark"]) .btn.primary { color: #ffffff; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { color: #04211c; } }
+  .btn svg { width: 16px; height: 16px; }
+
+  /* ---- section frame ---- */
+  section { padding: 46px 0; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 26px; flex-wrap: wrap; }
+  .sec-head h2 { font-size: clamp(22px, 3vw, 30px); margin: 0; font-weight: 640; letter-spacing: -0.01em; }
+  .sec-head p { margin: 6px 0 0; color: var(--dim); font-size: 15px; max-width: 46ch; }
+
+  /* ---- product deck ---- */
+  .deck { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .key {
+    position: relative; background: var(--key); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 12px;
+    scroll-margin-top: 80px; transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease;
+    overflow: hidden;
+  }
+  .key::before {
+    content: ""; position: absolute; inset: 0 0 auto 0; height: 3px;
+    background: var(--accent); opacity: 0; transition: opacity .14s ease;
+  }
+  .key:hover { transform: translateY(-3px); border-color: var(--border-hi); box-shadow: 0 10px 30px -18px color-mix(in srgb, var(--accent) 60%, transparent); }
+  .key:hover::before { opacity: 1; }
+  .key:target { border-color: var(--accent); }
+  .key.amber:hover { box-shadow: 0 10px 30px -18px color-mix(in srgb, var(--amber) 55%, transparent); }
+  .key.amber::before { background: var(--amber); }
+  .key-top { display: flex; align-items: center; gap: 12px; }
+  .glyph {
+    width: 42px; height: 42px; flex: none; border-radius: 11px; display: grid; place-items: center;
+    background: var(--accent-wash); color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
+  }
+  .amber .glyph { background: var(--amber-wash); color: var(--amber); border-color: color-mix(in srgb, var(--amber) 30%, transparent); }
+  .glyph svg { width: 22px; height: 22px; }
+  .key .tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .key h3 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+  .key p { margin: 0; color: var(--dim); font-size: 14.5px; line-height: 1.55; flex: 1; }
+  .links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .links a, .links span.na {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500;
+    padding: 6px 11px; border-radius: 8px; text-decoration: none; border: 1px solid var(--border);
+    color: var(--text); background: var(--surface-hi); transition: border-color .12s ease, color .12s ease;
+  }
+  .links a:hover { border-color: var(--accent); color: var(--accent); }
+  .links span.na { color: var(--muted); border-style: dashed; cursor: default; }
+  .links svg { width: 13px; height: 13px; }
+
+  /* ---- openlamp band ---- */
+  .band {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
+    padding: 32px; display: grid; grid-template-columns: 1.4fr 1fr; gap: 30px; align-items: center;
+  }
+  .band .amber-eyebrow { color: var(--amber); }
+  .band h2 { margin: 12px 0 10px; font-size: clamp(22px, 3vw, 28px); font-weight: 640; letter-spacing: -0.01em; }
+  .band p { margin: 0 0 18px; color: var(--dim); }
+  .band .diagram {
+    font-family: var(--font-mono); font-size: 12.5px; color: var(--dim); line-height: 1.7;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px;
+  }
+  .band .diagram b { color: var(--text); font-weight: 500; }
+  .band .diagram .hot { color: var(--amber); }
+  @media (max-width: 760px) { .band { grid-template-columns: 1fr; } }
+
+  /* ---- musician / about ---- */
+  .about { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start; }
+  .about .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 26px; }
+  .about h3 { margin: 0 0 10px; font-size: 18px; font-weight: 600; }
+  .about p { margin: 0 0 12px; color: var(--dim); font-size: 15px; }
+  .about p:last-child { margin-bottom: 0; }
+  @media (max-width: 700px) { .about { grid-template-columns: 1fr; } }
+
+  /* ---- support ---- */
+  .support { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .support .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+  .support .card h3 { margin: 0 0 8px; font-size: 16px; display: flex; align-items: center; gap: 9px; }
+  .support .card h3 svg { width: 18px; height: 18px; color: var(--accent); }
+  .support .card p { margin: 0; color: var(--dim); font-size: 14.5px; }
+  .support .card a { color: var(--accent); text-decoration: none; font-weight: 500; word-break: break-word; }
+  .support .card a:hover { text-decoration: underline; }
+
+  /* ---- footer ---- */
+  footer { border-top: 1px solid var(--border); margin-top: 40px; padding: 30px 0 46px; }
+  footer .wrap { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; }
+  footer .fbrand { font-family: var(--font-mono); font-size: 13px; color: var(--dim); }
+  footer nav { display: flex; gap: 20px; font-size: 14px; }
+  footer nav a { color: var(--dim); text-decoration: none; }
+  footer nav a:hover { color: var(--text); }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <span class="brand"><span class="led" aria-hidden="true"></span>BenLab</span>
+    <nav>
+      <a href="#products">Products</a>
+      <a href="#openlamp">OpenLamp</a>
+      <a href="#about">About</a>
+      <a href="#support">Support</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="readout"><span class="led" aria-hidden="true"></span>Stream Deck plugins · icon packs · stage-light control</div>
+      <h1>Tools I build for the <span class="glow">stage</span>, shared with you.</h1>
+      <p class="lede">I'm Benoît — I play keys in a band, on stage, surrounded by a pile of toys. I share what's in my rig and the tools I build and integrate around it. This is the home base for every plugin and icon pack: find your product, get the docs, the source, or reach me for support.</p>
+      <div class="cta">
+        <a class="btn primary" href="#products">Browse products
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="btn" href="#support">Get support</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="products">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <div class="eyebrow">The deck</div>
+          <h2>Products</h2>
+        </div>
+        <p>Each key links to its docs, its source when open, and a way to reach me. Coming from Elgato? Your product is here.</p>
+      </div>
+
+      <div class="deck">
+
+        <article class="key amber" id="lumideck">
+          <div class="key-top">
+            <span class="glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.4 1 2.2V16h6v-.3c0-.8.4-1.6 1-2.2A6 6 0 0 0 12 3Z"/></svg></span>
+            <div><div class="tag">Stream Deck plugin</div><h3>LumiDeck</h3></div>
+          </div>
+          <p>Control smart LED lamps straight from Stream Deck — 100% local, no cloud, ~45 ms. Colors, brightness, WLED effects &amp; palettes, scenes, snapshots, fades, blackout, groups. Keys and SD+ dials.</p>
+          <div class="links">
+            <a href="https://github.com/openlamp/openlamp">About &amp; setup</a>
+            <a href="https://github.com/openlamp/openlamp/issues">Support</a>
+            <span class="na">Closed source</span>
+          </div>
+        </article>
+
+        <article class="key" id="stage-keys">
+          <div class="key-top">
+            <span class="glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 4v10M12 4v10M16 4v10M3 14h18"/></svg></span>
+            <div><div class="tag">Icon pack</div><h3>Music Instruments for Stage Keys</h3></div>
+          </div>
+          <p>Full-colour sound-select icons for the live keyboardist — the complete General MIDI / XP set (128 programs) plus modern synth categories. Recognise the patch at a glance under stage lighting.</p>
+          <div class="links">
+            <a href="https://github.com/Beennnn/streamdeck-stage-keys#readme">Docs</a>
+            <a href="https://github.com/Beennnn/streamdeck-stage-keys">Source</a>
+            <a href="https://github.com/Beennnn/streamdeck-stage-keys/issues">Support</a>
+          </div>
+        </article>
+
+        <article class="key" id="wled-icons">
+          <div class="key-top">
+            <span class="glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M6 6l1.5 1.5M16.5 16.5 18 18M18 6l-1.5 1.5M7.5 16.5 6 18"/><circle cx="12" cy="12" r="3.5"/></svg></span>
+            <div><div class="tag">Icon packs · 2</div><h3>WLED Icons for Stream Deck</h3></div>
+          </div>
+          <p>216 animated WLED effects as looping key GIFs, plus 111 static palette &amp; control icons. The animated and static companions for any WLED setup. Fan-made, not affiliated with the WLED project.</p>
+          <div class="links">
+            <a href="https://github.com/Beennnn/streamdeck-wled-icons#readme">Docs</a>
+            <a href="https://github.com/Beennnn/streamdeck-wled-icons">Source</a>
+            <a href="https://github.com/Beennnn/streamdeck-wled-icons/issues">Support</a>
+          </div>
+        </article>
+
+        <article class="key" id="radio-frames">
+          <div class="key-top">
+            <span class="glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><rect x="8" y="8" width="8" height="8" rx="1.5"/></svg></span>
+            <div><div class="tag">Icon pack</div><h3>Radio Button Selection Frames</h3></div>
+          </div>
+          <p>Coloured frames, corner notches and single-corner bevels that show which key is active in a radio-button group. 19 colours × 4 styles — the chosen option reads at a glance, title text stays crisp.</p>
+          <div class="links">
+            <a href="https://github.com/Beennnn/streamdeck-radio-frames#readme">Docs</a>
+            <a href="https://github.com/Beennnn/streamdeck-radio-frames">Source</a>
+            <a href="https://github.com/Beennnn/streamdeck-radio-frames/issues">Support</a>
+          </div>
+        </article>
+
+        <article class="key" id="wifi-picker">
+          <div class="key-top">
+            <span class="glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5a10 10 0 0 1 14 0M8 15.5a6 6 0 0 1 8 0"/><circle cx="12" cy="19" r="1"/></svg></span>
+            <div><div class="tag">Stream Deck plugin · macOS</div><h3>Wi-Fi Picker</h3></div>
+          </div>
+          <p>Switch between your saved Wi-Fi networks from a Stream Deck key or dial. macOS only — it briefly cycles Wi-Fi to connect, and settles in once it learns which of your networks are nearby.</p>
+          <div class="links">
+            <a href="https://github.com/Beennnn/streamdeck-wifi-picker#readme">Docs</a>
+            <a href="https://github.com/Beennnn/streamdeck-wifi-picker">Source</a>
+            <a href="https://github.com/Beennnn/streamdeck-wifi-picker/issues">Support</a>
+          </div>
+        </article>
+
+        <article class="key" id="midi-note-display">
+          <div class="key-top">
+            <span class="glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="16" cy="16" r="3"/></svg></span>
+            <div><div class="tag">Stream Deck+ project</div><h3>MIDI Note Display</h3></div>
+          </div>
+          <p>Show a raw MIDI value (0–127) as a note name — plus a one-octave piano with the current key lit — on a Stream Deck + dial. On stage, "split at C4" reads instantly. Built on the Trevliga Spel MIDI plugin.</p>
+          <div class="links">
+            <a href="https://github.com/Beennnn/streamdeck-midi-note-display#readme">Docs</a>
+            <a href="https://github.com/Beennnn/streamdeck-midi-note-display">Source</a>
+            <a href="https://github.com/Beennnn/streamdeck-midi-note-display/issues">Support</a>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="tooling">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <div class="eyebrow">For builders</div>
+          <h2>Open-source tooling</h2>
+        </div>
+        <p>The kit behind the products — free to use if you make your own Stream Deck packs or plugins.</p>
+      </div>
+      <div class="deck">
+        <article class="key">
+          <div class="key-top">
+            <span class="glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m8 9-3 3 3 3M16 9l3 3-3 3M13 6l-2 12"/></svg></span>
+            <div><div class="tag">Toolkit</div><h3>sdicons</h3></div>
+          </div>
+          <p>Generate &amp; publish Stream Deck icon packs — SVG → validated <code>.streamDeckIconPack</code>, with render, metadata, spec-lint, contact sheet and packaging.</p>
+          <div class="links">
+            <a href="https://github.com/Beennnn/stream-deck-icons#readme">Docs</a>
+            <a href="https://github.com/Beennnn/stream-deck-icons">Source</a>
+          </div>
+        </article>
+        <article class="key">
+          <div class="key-top">
+            <span class="glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.4 7.7 8 10 4.6-2.3 8-5 8-10V6l-8-4Z"/></svg></span>
+            <div><div class="tag">Toolkit</div><h3>Plugin toolkit</h3></div>
+          </div>
+          <p>Tools, commands and hard-won gotchas for building &amp; packaging Elgato Stream Deck plugins on macOS (TypeScript, Marketplace).</p>
+          <div class="links">
+            <a href="https://github.com/Beennnn/streamdeck-plugin-toolkit#readme">Docs</a>
+            <a href="https://github.com/Beennnn/streamdeck-plugin-toolkit">Source</a>
+          </div>
+        </article>
+        <article class="key">
+          <div class="key-top">
+            <span class="glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="1.6" fill="currentColor" stroke="none"/><circle cx="15" cy="17" r="1.6" fill="currentColor" stroke="none"/></svg></span>
+            <div><div class="tag">CLI</div><h3>Profile Switch</h3></div>
+          </div>
+          <p>Switch Stream Deck profiles by name from the command line — reliably, even with the config window open (via ghost apps).</p>
+          <div class="links">
+            <a href="https://github.com/Beennnn/streamdeck-profile-switch#readme">Docs</a>
+            <a href="https://github.com/Beennnn/streamdeck-profile-switch">Source</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="openlamp">
+    <div class="wrap">
+      <div class="band">
+        <div>
+          <div class="eyebrow amber-eyebrow">Open-source project</div>
+          <h2>OpenLamp — instant, local stage light</h2>
+          <p>LumiDeck is the Stream Deck face of <b>OpenLamp</b>: an open project that drives cheap consumer smart LED lamps — WLED (recommended) or Tuya — from a Stream Deck, a MIDI controller or the command line, with ~45 ms response and zero cloud at runtime. Made for musicians and makers who want their lights to react like an instrument.</p>
+          <div class="cta">
+            <a class="btn" href="https://github.com/openlamp">OpenLamp on GitHub
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+            </a>
+            <a class="btn" href="https://github.com/orgs/openlamp/projects/1">Public roadmap</a>
+          </div>
+        </div>
+        <div class="diagram">
+your lamps · <span class="hot">WLED</span> / Tuya<br>
+&nbsp;&nbsp;&nbsp;&nbsp;▲<br>
+&nbsp;&nbsp;&nbsp;&nbsp;│ direct local API, ~45 ms<br>
+┌───┴───────────┐<br>
+│ <b>openlamp-engine</b> │<br>
+└─▲────────▲────┘<br>
+&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+<b>LumiDeck</b>&nbsp;&nbsp;<b>MIDI / CLI</b>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <div class="eyebrow">Who's behind this</div>
+          <h2>A keyboardist who codes</h2>
+        </div>
+      </div>
+      <div class="about">
+        <div class="card">
+          <h3>On stage</h3>
+          <p>I play keys in a band, on stage, surrounded by a pile of toys — keyboards, controllers, lamps, a Stream Deck. Splits, patch changes and light cues all have to happen fast, in the dark, without looking down.</p>
+          <p>Most of these tools were born from a real problem at a real gig: a Stream Deck that had to read at a glance, lamps that had to hit on the beat, a split point I needed to see as a note, not a number.</p>
+        </div>
+        <div class="card">
+          <h3>At the desk</h3>
+          <p>I build and integrate tools around that rig, and share what works — icon packs, plugins, the OpenLamp stack, and notes on the gear itself. If it helped me play better, it might help you too.</p>
+          <p>Everything here is made for the live musician and the tinkerer. Found a bug, want a feature, or just want to say hi? The support section below is the way in.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="support">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <div class="eyebrow">Reach me</div>
+          <h2>Support &amp; contact</h2>
+        </div>
+        <p>Fastest path depends on the product — pick the one that fits.</p>
+      </div>
+      <div class="support">
+        <div class="card">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-2c-2.8.6-3.4-1.2-3.4-1.2-.5-1.1-1.1-1.4-1.1-1.4-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.3-2.2-.3-4.5-1.1-4.5-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.6 0 0 .8-.3 2.7 1a9.3 9.3 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.3.2 2.3.1 2.6.6.7 1 1.6 1 2.7 0 3.9-2.3 4.7-4.5 5 .3.3.7.9.7 1.9v2.8c0 .3.2.6.7.5A10 10 0 0 0 12 2Z"/></svg>Open-source products</h3>
+          <p>Bugs and feature requests go to that product's GitHub Issues — the Support link on each key above. Public, tracked, and searchable.</p>
+        </div>
+        <div class="card">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>LumiDeck &amp; general</h3>
+          <p>LumiDeck is part of OpenLamp — open an issue there:<br><a href="https://github.com/openlamp/openlamp/issues/new">Open an issue on OpenLamp</a></p>
+        </div>
+        <div class="card">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3.5 9h17M3.5 15h17M12 3a14 14 0 0 0 0 18M12 3a14 14 0 0 1 0 18"/></svg>Around the web</h3>
+          <p>Code lives at <a href="https://github.com/Beennnn">github.com/Beennnn</a>. The lamp project is at <a href="https://github.com/openlamp">github.com/openlamp</a>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="fbrand">BenLab — made between soundchecks by Benoît</span>
+    <nav>
+      <a href="#products">Products</a>
+      <a href="https://github.com/Beennnn">GitHub</a>
+      <a href="https://github.com/openlamp">OpenLamp</a>
+      <a href="#support">Support</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
