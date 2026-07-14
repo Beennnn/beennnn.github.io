@@ -192,6 +192,26 @@
   .support .card a { color: var(--accent); text-decoration: none; font-weight: 500; word-break: break-word; }
   .support .card a:hover { text-decoration: underline; }
 
+  /* contact form */
+  .contact { margin-top: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 26px; display: grid; grid-template-columns: 1fr 1.35fr; gap: 30px; align-items: start; }
+  .contact-intro h3 { margin: 0 0 10px; font-size: 17px; font-weight: 600; }
+  .contact-intro p { margin: 0 0 10px; color: var(--dim); font-size: 14.5px; }
+  .contact-intro p:last-child { margin: 0; }
+  .cform { display: flex; flex-direction: column; gap: 12px; }
+  .cform .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .cform label { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--dim); font-weight: 500; letter-spacing: 0.01em; }
+  .cform input, .cform select, .cform textarea { font: inherit; font-size: 14.5px; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 9px; padding: 10px 12px; width: 100%; }
+  .cform input:focus, .cform select:focus, .cform textarea:focus { outline: none; border-color: var(--accent); }
+  .cform textarea { resize: vertical; min-height: 92px; }
+  .cform button { align-self: start; margin-top: 2px; font: inherit; font-size: 15px; font-weight: 500; background: var(--accent); color: #052019; border: none; border-radius: 10px; padding: 11px 22px; cursor: pointer; transition: transform .12s ease, opacity .12s ease; }
+  .cform button:hover { transform: translateY(-1px); }
+  .cform button:disabled { opacity: .6; cursor: default; transform: none; }
+  .form-status { margin: 2px 0 0; font-size: 14px; }
+  .form-status.ok { color: var(--accent); }
+  .form-status.err { color: #e2605a; }
+  .honey { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+  @media (max-width: 700px) { .contact { grid-template-columns: 1fr; } .cform .row { grid-template-columns: 1fr; } }
+
   /* ---- footer ---- */
   footer { border-top: 1px solid var(--border); margin-top: 40px; padding: 30px 0 46px; }
   footer .wrap { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; }
@@ -447,6 +467,39 @@ your lamps · <span class="hot">WLED</span> / Tuya<br>
           <p>Code lives at <a href="https://github.com/Beennnn">github.com/Beennnn</a>. The lamp project is at <a href="https://github.com/openlamp">github.com/openlamp</a>.</p>
         </div>
       </div>
+
+      <div class="contact">
+        <div class="contact-intro">
+          <h3>No GitHub? Message me here</h3>
+          <p>This goes straight to my inbox — your note, my reply. I don't publish my address; the form keeps it private.</p>
+          <p>For bugs on an open-source product, GitHub Issues is still the fastest and most trackable route.</p>
+        </div>
+        <form id="cform" class="cform">
+          <input type="hidden" name="access_key" value="54e14ac8-8052-4bfa-9821-be037562ecdc">
+          <input type="hidden" name="subject" value="BenLab — new contact message">
+          <input type="hidden" name="from_name" value="BenLab hub">
+          <input type="checkbox" name="botcheck" class="honey" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <div class="row">
+            <label>Name<input type="text" name="name" required autocomplete="name"></label>
+            <label>Your email<input type="email" name="email" required autocomplete="email"></label>
+          </div>
+          <label>Product
+            <select name="product">
+              <option>General question</option>
+              <option>LumiDeck</option>
+              <option>Music Instruments for Stage Keys</option>
+              <option>WLED Icons</option>
+              <option>Radio Button Selection Frames</option>
+              <option>Wi-Fi Picker</option>
+              <option>MIDI Note Display</option>
+              <option>Tooling / other</option>
+            </select>
+          </label>
+          <label>Message<textarea name="message" required placeholder="What's up?"></textarea></label>
+          <button type="submit">Send message</button>
+          <p class="form-status" id="cstatus" hidden></p>
+        </form>
+      </div>
     </div>
   </section>
 </main>
@@ -462,6 +515,37 @@ your lamps · <span class="hot">WLED</span> / Tuya<br>
     </nav>
   </div>
 </footer>
+
+<script>
+  (function () {
+    var f = document.getElementById('cform');
+    if (!f) return;
+    var s = document.getElementById('cstatus');
+    var b = f.querySelector('button');
+    function show(cls, msg) { s.hidden = false; s.className = 'form-status ' + cls; s.textContent = msg; }
+    f.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (f.access_key.value.indexOf('WEB3FORMS') === 0) {
+        show('err', 'Contact form is not wired up yet — please use GitHub for now.');
+        return;
+      }
+      b.disabled = true;
+      show('', 'Sending…');
+      fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: new FormData(f)
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (d.success) { f.reset(); show('ok', 'Thanks — your message is on its way. I’ll get back to you.'); }
+          else { show('err', 'Something went wrong. Please reach me on GitHub instead.'); }
+        })
+        .catch(function () { show('err', 'Network error. Please reach me on GitHub instead.'); })
+        .finally(function () { b.disabled = false; });
+    });
+  })();
+</script>
 
 </body>
 </html>
